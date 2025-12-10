@@ -15,13 +15,13 @@ module.exports = {
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'development',
-        PORT: 3001,
+        PORT: 80,
         FRONTEND_URL: 'http://localhost:8080,http://38.54.6.91:8080',
         MONGODB_URI: 'mongodb://localhost:27017/airquest'
       },
       env_production: {
         NODE_ENV: 'production',
-        PORT: 3001,
+        PORT: 80,
         FRONTEND_URL: 'http://38.54.6.91:8080,http://localhost:8080',
         MONGODB_URI: 'mongodb://localhost:27017/airquest'
       },

@@ -5,7 +5,7 @@ import MapView from "@/components/dashboard/MapView";
 import DeviceCard from "@/components/dashboard/DeviceCard";
 import SensorCard from "@/components/dashboard/SensorCard";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:80";
 
 interface Location {
   lat: number;

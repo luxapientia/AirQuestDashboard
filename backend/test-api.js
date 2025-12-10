@@ -3,7 +3,7 @@
  * Run this after starting the server: node test-api.js
  */
 
-const API_URL = 'http://localhost:3001';
+const API_URL = 'http://localhost:80';
 
 async function testAPI() {
   console.log('🧪 Testing AirQuest Backend API...\n');
