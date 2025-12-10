@@ -104,12 +104,16 @@ echo -e "${YELLOW}🚀 Starting backend with PM2...${NC}"
 echo -e "${GREEN}Backend path: $BACKEND_DIR${NC}"
 
 # Use ecosystem file if it exists (recommended), otherwise use direct command
-if [ -f "$BACKEND_DIR/ecosystem.config.js" ]; then
+if [ -f "$BACKEND_DIR/ecosystem.config.cjs" ]; then
+    echo -e "${GREEN}Using ecosystem.config.cjs for PM2 configuration${NC}"
+    cd "$BACKEND_DIR"
+    pm2 start ecosystem.config.cjs
+elif [ -f "$BACKEND_DIR/ecosystem.config.js" ]; then
     echo -e "${GREEN}Using ecosystem.config.js for PM2 configuration${NC}"
     cd "$BACKEND_DIR"
     pm2 start ecosystem.config.js
 else
-    echo -e "${YELLOW}Using direct PM2 command (ecosystem.config.js not found)${NC}"
+    echo -e "${YELLOW}Using direct PM2 command (ecosystem.config.cjs not found)${NC}"
     echo -e "${YELLOW}Listing files in backend directory:${NC}"
     ls -la "$BACKEND_DIR" | head -10
     cd "$BACKEND_DIR"

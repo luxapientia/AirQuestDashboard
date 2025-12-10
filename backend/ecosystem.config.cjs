@@ -2,8 +2,8 @@
  * PM2 Ecosystem Configuration for AirQuest Backend
  * 
  * Usage:
- *   pm2 start ecosystem.config.js
- *   pm2 start ecosystem.config.js --env production
+ *   pm2 start ecosystem.config.cjs
+ *   pm2 start ecosystem.config.cjs --env production
  */
 
 module.exports = {
