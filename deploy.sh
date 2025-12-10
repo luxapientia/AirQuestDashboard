@@ -12,8 +12,10 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-BACKEND_DIR="backend"
-FRONTEND_DIR="."
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BACKEND_DIR="$SCRIPT_DIR/backend"
+FRONTEND_DIR="$SCRIPT_DIR"
 APP_NAME="airquest-dashboard"
 BACKEND_APP_NAME="airquest-backend"
 FRONTEND_APP_NAME="airquest-frontend"
@@ -73,6 +75,7 @@ else
 fi
 
 # Step 5: Check for .env file in backend
+cd ..
 if [ ! -f "$BACKEND_DIR/.env" ]; then
     echo -e "${YELLOW}⚠️  Backend .env file not found. Creating from .env.example if it exists...${NC}"
     if [ -f "$BACKEND_DIR/.env.example" ]; then
@@ -96,16 +99,24 @@ echo -e "${GREEN}✅ Logs directory ready${NC}\n"
 
 # Step 8: Start backend with PM2
 echo -e "${YELLOW}🚀 Starting backend with PM2...${NC}"
-cd "$BACKEND_DIR"
+
+# Get absolute path to backend directory (from project root)
+PROJECT_ROOT="$(pwd)"
+BACKEND_ABS_PATH="$PROJECT_ROOT/$BACKEND_DIR"
+echo -e "${GREEN}Backend path: $BACKEND_ABS_PATH${NC}"
 
 # Use ecosystem file if it exists (recommended), otherwise use direct command
-if [ -f "ecosystem.config.js" ]; then
+if [ -f "$BACKEND_ABS_PATH/ecosystem.config.js" ]; then
     echo -e "${GREEN}Using ecosystem.config.js for PM2 configuration${NC}"
+    cd "$BACKEND_ABS_PATH"
     pm2 start ecosystem.config.js
 else
-    echo -e "${YELLOW}Using direct PM2 command (ecosystem.config.js not found)${NC}"
+    echo -e "${YELLOW}Using direct PM2 command (ecosystem.config.js not found at $BACKEND_ABS_PATH/ecosystem.config.js)${NC}"
+    echo -e "${YELLOW}Listing files in backend directory:${NC}"
+    ls -la "$BACKEND_ABS_PATH" | head -10
+    cd "$BACKEND_ABS_PATH"
     # Use PM2's built-in logging (no need for --error-log/--out-log in newer versions)
-    pm2 start server.js --name "$BACKEND_APP_NAME" \
+    pm2 start ./server.js --name "$BACKEND_APP_NAME" \
         --log-date-format="YYYY-MM-DD HH:mm:ss Z" \
         --merge-logs \
         --time
