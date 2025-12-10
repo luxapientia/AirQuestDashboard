@@ -98,14 +98,15 @@ echo -e "${GREEN}✅ Logs directory ready${NC}\n"
 echo -e "${YELLOW}🚀 Starting backend with PM2...${NC}"
 cd "$BACKEND_DIR"
 
-# Use ecosystem file if it exists, otherwise use direct command
+# Use ecosystem file if it exists (recommended), otherwise use direct command
 if [ -f "ecosystem.config.js" ]; then
+    echo -e "${GREEN}Using ecosystem.config.js for PM2 configuration${NC}"
     pm2 start ecosystem.config.js
 else
+    echo -e "${YELLOW}Using direct PM2 command (ecosystem.config.js not found)${NC}"
+    # Use PM2's built-in logging (no need for --error-log/--out-log in newer versions)
     pm2 start server.js --name "$BACKEND_APP_NAME" \
         --log-date-format="YYYY-MM-DD HH:mm:ss Z" \
-        --error-log="logs/error.log" \
-        --out-log="logs/out.log" \
         --merge-logs \
         --time
 fi

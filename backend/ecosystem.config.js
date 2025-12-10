@@ -6,7 +6,7 @@
  *   pm2 start ecosystem.config.js --env production
  */
 
-export default {
+module.exports = {
   apps: [
     {
       name: 'airquest-backend',
@@ -45,10 +45,7 @@ export default {
       
       // Graceful shutdown
       kill_timeout: 5000,
-      wait_ready: false,
-      
-      // Environment variables from .env file
-      env_file: '.env'
+      wait_ready: false
     }
   ]
 };
