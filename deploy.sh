@@ -45,6 +45,7 @@ fi
 
 # Step 1: Install frontend dependencies
 echo -e "${YELLOW}📦 Installing frontend dependencies...${NC}"
+cd "$FRONTEND_DIR"
 npm install
 echo -e "${GREEN}✅ Frontend dependencies installed${NC}\n"
 
@@ -75,7 +76,6 @@ else
 fi
 
 # Step 5: Check for .env file in backend
-cd ..
 if [ ! -f "$BACKEND_DIR/.env" ]; then
     echo -e "${YELLOW}⚠️  Backend .env file not found. Creating from .env.example if it exists...${NC}"
     if [ -f "$BACKEND_DIR/.env.example" ]; then
@@ -100,21 +100,19 @@ echo -e "${GREEN}✅ Logs directory ready${NC}\n"
 # Step 8: Start backend with PM2
 echo -e "${YELLOW}🚀 Starting backend with PM2...${NC}"
 
-# Get absolute path to backend directory (from project root)
-PROJECT_ROOT="$(pwd)"
-BACKEND_ABS_PATH="$PROJECT_ROOT/$BACKEND_DIR"
-echo -e "${GREEN}Backend path: $BACKEND_ABS_PATH${NC}"
+# Use absolute path to backend directory
+echo -e "${GREEN}Backend path: $BACKEND_DIR${NC}"
 
 # Use ecosystem file if it exists (recommended), otherwise use direct command
-if [ -f "$BACKEND_ABS_PATH/ecosystem.config.js" ]; then
+if [ -f "$BACKEND_DIR/ecosystem.config.js" ]; then
     echo -e "${GREEN}Using ecosystem.config.js for PM2 configuration${NC}"
-    cd "$BACKEND_ABS_PATH"
+    cd "$BACKEND_DIR"
     pm2 start ecosystem.config.js
 else
-    echo -e "${YELLOW}Using direct PM2 command (ecosystem.config.js not found at $BACKEND_ABS_PATH/ecosystem.config.js)${NC}"
+    echo -e "${YELLOW}Using direct PM2 command (ecosystem.config.js not found)${NC}"
     echo -e "${YELLOW}Listing files in backend directory:${NC}"
-    ls -la "$BACKEND_ABS_PATH" | head -10
-    cd "$BACKEND_ABS_PATH"
+    ls -la "$BACKEND_DIR" | head -10
+    cd "$BACKEND_DIR"
     # Use PM2's built-in logging (no need for --error-log/--out-log in newer versions)
     pm2 start ./server.js --name "$BACKEND_APP_NAME" \
         --log-date-format="YYYY-MM-DD HH:mm:ss Z" \
@@ -141,6 +139,4 @@ echo -e "  pm2 list                        # List all processes"
 
 echo -e "\n${GREEN}🌐 Frontend build is in the 'dist' directory${NC}"
 echo -e "${YELLOW}💡 Configure your web server (nginx/apache) to serve the 'dist' directory${NC}\n"
-
-cd ..
 
