@@ -6,6 +6,7 @@
   "main": "server.js",
   "scripts": {
     "dev": "node --watch server.js",
+    "build": "node --check server.js && echo 'Backend build validation complete'",
     "start": "node server.js"
   },
   "keywords": ["gps", "tracking", "iot", "api"],
