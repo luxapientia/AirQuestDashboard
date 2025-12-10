@@ -36,7 +36,7 @@ npm install
 4. Create a `.env` file:
 ```bash
 # Create .env file with the following variables:
-PORT=3001
+PORT=80
 FRONTEND_URL=http://localhost:8080
 MONGODB_URI=mongodb://localhost:27017/airquest
 # Or for MongoDB Atlas:
@@ -52,7 +52,7 @@ npm run dev
 npm start
 ```
 
-The server will start on `http://localhost:3001` by default and automatically connect to MongoDB.
+The server will start on `http://localhost:80` by default and automatically connect to MongoDB.
 
 ## API Endpoints
 
@@ -98,7 +98,7 @@ This endpoint is maintained for backward compatibility and redirects to `/api/se
 **Example using curl:**
 ```bash
 # Send GPS, temperature, and humidity data
-curl -X POST http://localhost:3001/api/sensor-data \
+curl -X POST http://localhost:80/api/sensor-data \
   -H "Content-Type: application/json" \
   -d '{
     "deviceId": "DEV-001-A1",
@@ -110,7 +110,7 @@ curl -X POST http://localhost:3001/api/sensor-data \
   }'
 
 # Send only GPS data (temperature and humidity are optional)
-curl -X POST http://localhost:3001/api/sensor-data \
+curl -X POST http://localhost:80/api/sensor-data \
   -H "Content-Type: application/json" \
   -d '{
     "deviceId": "DEV-001-A1",
@@ -145,10 +145,10 @@ Get current GPS locations for all devices (or a specific device).
 **Example:**
 ```bash
 # Get all locations
-curl http://localhost:3001/api/gps/locations
+curl http://localhost:80/api/gps/locations
 
 # Get location for specific device
-curl http://localhost:3001/api/gps/locations?deviceId=DEV-001-A1
+curl http://localhost:80/api/gps/locations?deviceId=DEV-001-A1
 ```
 
 #### GET `/api/gps/history/:deviceId`
@@ -174,7 +174,7 @@ Get GPS history for a specific device.
 
 **Example:**
 ```bash
-curl http://localhost:3001/api/gps/history/DEV-001-A1?limit=50
+curl http://localhost:80/api/gps/history/DEV-001-A1?limit=50
 ```
 
 ### Sensor Data (Temperature & Humidity)
@@ -208,10 +208,10 @@ Get complete sensor data (GPS, temperature, humidity) for a specific device.
 **Example:**
 ```bash
 # Get last 50 sensor readings
-curl http://localhost:3001/api/sensor-data/DEV-001-A1?limit=50
+curl http://localhost:80/api/sensor-data/DEV-001-A1?limit=50
 
 # Get sensor data for a date range
-curl "http://localhost:3001/api/sensor-data/DEV-001-A1?startDate=2024-01-01T00:00:00Z&endDate=2024-01-01T23:59:59Z"
+curl "http://localhost:80/api/sensor-data/DEV-001-A1?startDate=2024-01-01T00:00:00Z&endDate=2024-01-01T23:59:59Z"
 ```
 
 #### GET `/api/sensor-data/:deviceId/latest`
@@ -234,7 +234,7 @@ Get the latest sensor data for a specific device.
 
 **Example:**
 ```bash
-curl http://localhost:3001/api/sensor-data/DEV-001-A1/latest
+curl http://localhost:80/api/sensor-data/DEV-001-A1/latest
 ```
 
 ### Device Management
@@ -297,7 +297,7 @@ Health check endpoint.
 import requests
 import time
 
-API_URL = "http://localhost:3001/api/sensor-data"
+API_URL = "http://localhost:80/api/sensor-data"
 
 def send_sensor_data(device_id, device_name, latitude, longitude, temperature=None, humidity=None):
     payload = {
@@ -335,7 +335,7 @@ const sendSensorData = async (deviceId, deviceName, latitude, longitude, tempera
   if (temperature !== null) payload.temperature = temperature;
   if (humidity !== null) payload.humidity = humidity;
   
-  const response = await fetch('http://localhost:3001/api/sensor-data', {
+  const response = await fetch('http://localhost:80/api/sensor-data', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -360,7 +360,7 @@ sendSensorData('DEV-001-A1', 'Sensor Hub A1', 40.7128, -74.0060);
 
 const char* ssid = "YOUR_WIFI_SSID";
 const char* password = "YOUR_WIFI_PASSWORD";
-const char* serverURL = "http://localhost:3001/api/gps";
+const char* serverURL = "http://localhost:80/api/gps";
 
 void sendGPSData(String deviceId, String deviceName, float lat, float lng) {
   if (WiFi.status() == WL_CONNECTED) {

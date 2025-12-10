@@ -45,7 +45,7 @@ npm run dev
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:8080` and the backend API at `http://localhost:3001`.
+The frontend will be available at `http://localhost:8080` and the backend API at `http://localhost:80`.
 
 ## Backend API
 
@@ -55,7 +55,7 @@ The backend receives GPS data from IoT devices via REST API. See [backend/README
 1. Navigate to `backend/` directory
 2. Run `npm install`
 3. Run `npm run dev` to start the server
-4. Send GPS data to `POST http://localhost:3001/api/gps`
+4. Send GPS data to `POST http://localhost:80/api/gps`
 
 **Example GPS data format:**
 ```json

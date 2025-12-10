@@ -168,7 +168,7 @@ The frontend is built into the `dist` directory. You need to serve it with a web
 
        # Proxy API requests to backend
        location /api {
-           proxy_pass http://localhost:3001;
+           proxy_pass http://localhost:80;
            proxy_http_version 1.1;
            proxy_set_header Upgrade $http_upgrade;
            proxy_set_header Connection 'upgrade';
@@ -202,7 +202,7 @@ pm2 save
 Make sure your `backend/.env` file contains:
 
 ```env
-PORT=3001
+PORT=80
 FRONTEND_URL=http://your-domain.com
 MONGODB_URI=mongodb://localhost:27017/airquest
 # Or for MongoDB Atlas:
@@ -242,10 +242,10 @@ pm2 describe airquest-backend    # Check process details
 
 ### Port already in use
 ```bash
-# Check what's using port 3001
-sudo lsof -i :3001
+# Check what's using port 80
+sudo lsof -i :80
 # Or
-sudo netstat -tulpn | grep 3001
+sudo netstat -tulpn | grep 80
 ```
 
 ### Frontend not loading
@@ -261,7 +261,7 @@ sudo netstat -tulpn | grep 3001
 - [ ] Backend is running with PM2
 - [ ] Frontend is built and served
 - [ ] Nginx (or web server) is configured
-- [ ] Firewall allows ports 80, 443, and 3001
+- [ ] Firewall allows ports 80 and 443
 - [ ] SSL certificate is configured (for HTTPS)
 - [ ] PM2 auto-start is enabled
 - [ ] Logs are being monitored
