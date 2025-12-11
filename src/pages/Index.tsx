@@ -1,4 +1,4 @@
-import { Thermometer, Droplets, Wind, Sun, Gauge, Zap, MapPin, Clock, Tag } from "lucide-react";
+import { Thermometer, Droplets, Wind, Sun, Gauge, Zap, MapPin, Clock, Tag, Activity, Cloud, Layers, BarChart3 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import Header from "@/components/dashboard/Header";
 import MapView from "@/components/dashboard/MapView";
@@ -59,6 +59,30 @@ interface DeviceSensorData {
   deviceName: string;
   temperature: number | null;
   humidity: number | null;
+  co2: number | null;
+  // ADC values
+  adcNO: number | null;
+  adcH2S: number | null;
+  adcS88: number | null;
+  adcPIS: number | null;
+  adcNO2: number | null;
+  adcO3: number | null;
+  adcCO: number | null;
+  adcSO2: number | null;
+  // PM values
+  pm1_0_CF1: number | null;
+  pm2_5_CF1: number | null;
+  pm10_CF1: number | null;
+  pm1_0_ATM: number | null;
+  pm2_5_ATM: number | null;
+  pm10_ATM: number | null;
+  // Particle counts
+  particle_0_3: number | null;
+  particle_0_5: number | null;
+  particle_1_0: number | null;
+  particle_2_5: number | null;
+  particle_5_0: number | null;
+  particle_10: number | null;
   latitude: number;
   longitude: number;
   timestamp: string;
@@ -140,8 +164,32 @@ const Index = () => {
         setDeviceSensorData({
           deviceId: data.deviceId,
           deviceName: data.deviceName,
-          temperature: data.temperature,
-          humidity: data.humidity,
+          temperature: data.temperature ?? null,
+          humidity: data.humidity ?? null,
+          co2: data.co2 ?? null,
+          // ADC values
+          adcNO: data.adcNO ?? null,
+          adcH2S: data.adcH2S ?? null,
+          adcS88: data.adcS88 ?? null,
+          adcPIS: data.adcPIS ?? null,
+          adcNO2: data.adcNO2 ?? null,
+          adcO3: data.adcO3 ?? null,
+          adcCO: data.adcCO ?? null,
+          adcSO2: data.adcSO2 ?? null,
+          // PM values
+          pm1_0_CF1: data.pm1_0_CF1 ?? null,
+          pm2_5_CF1: data.pm2_5_CF1 ?? null,
+          pm10_CF1: data.pm10_CF1 ?? null,
+          pm1_0_ATM: data.pm1_0_ATM ?? null,
+          pm2_5_ATM: data.pm2_5_ATM ?? null,
+          pm10_ATM: data.pm10_ATM ?? null,
+          // Particle counts
+          particle_0_3: data.particle_0_3 ?? null,
+          particle_0_5: data.particle_0_5 ?? null,
+          particle_1_0: data.particle_1_0 ?? null,
+          particle_2_5: data.particle_2_5 ?? null,
+          particle_5_0: data.particle_5_0 ?? null,
+          particle_10: data.particle_10 ?? null,
           latitude: data.latitude,
           longitude: data.longitude,
           timestamp: data.timestamp || data.receivedAt
@@ -247,105 +295,300 @@ const Index = () => {
           </h2>
           
           {selectedDeviceId && deviceSensorData ? (
-            // Show device-specific sensor data
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Device Name */}
-              <div className="glass-card-hover p-5 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-secondary/20 flex items-center justify-center">
-                    <Tag className="w-5 h-5 text-secondary" />
+            <div className="space-y-6">
+              {/* Device Info & Basic Sensors */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Device Name */}
+                <div className="glass-card-hover p-5 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-lg bg-secondary/20 flex items-center justify-center">
+                      <Tag className="w-5 h-5 text-secondary" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-foreground">Device</h3>
+                      <p className="text-xs text-muted-foreground">Identifier</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-medium text-foreground">Device Name</h3>
-                    <p className="text-xs text-muted-foreground">Identifier</p>
+                  <div className="mb-4">
+                    <p className="text-xl font-bold text-foreground">{deviceSensorData.deviceName}</p>
+                    <p className="text-xs text-muted-foreground mt-1 font-mono">{deviceSensorData.deviceId}</p>
                   </div>
                 </div>
-                <div className="mb-4">
-                  <p className="text-2xl font-bold text-foreground">{deviceSensorData.deviceName}</p>
-                  <p className="text-xs text-muted-foreground mt-1 font-mono">{deviceSensorData.deviceId}</p>
-                </div>
+
+                {/* Temperature */}
+                {deviceSensorData.temperature !== null && (
+                  <SensorCard
+                    title="Temperature"
+                    value={deviceSensorData.temperature}
+                    unit="°C"
+                    icon={Thermometer}
+                    min={-10}
+                    max={50}
+                    color="primary"
+                    index={1}
+                  />
+                )}
+
+                {/* Humidity */}
+                {deviceSensorData.humidity !== null && (
+                  <SensorCard
+                    title="Humidity"
+                    value={deviceSensorData.humidity}
+                    unit="%"
+                    icon={Droplets}
+                    min={0}
+                    max={100}
+                    color="secondary"
+                    index={2}
+                  />
+                )}
+
+                {/* CO2 */}
+                {deviceSensorData.co2 !== null && (
+                  <SensorCard
+                    title="CO2"
+                    value={deviceSensorData.co2}
+                    unit="ppm"
+                    icon={Activity}
+                    min={0}
+                    max={5000}
+                    color="warning"
+                    index={3}
+                  />
+                )}
               </div>
 
-              {/* Temperature */}
-              {deviceSensorData.temperature !== null && (
-                <SensorCard
-                  title="Temperature"
-                  value={deviceSensorData.temperature}
-                  unit="°C"
-                  icon={Thermometer}
-                  min={-10}
-                  max={50}
-                  color="primary"
-                  index={1}
-                />
+              {/* ADC Values (Gas Sensors) */}
+              {(deviceSensorData.adcNO !== null || deviceSensorData.adcH2S !== null || deviceSensorData.adcS88 !== null || 
+                deviceSensorData.adcPIS !== null || deviceSensorData.adcNO2 !== null || deviceSensorData.adcO3 !== null || 
+                deviceSensorData.adcCO !== null || deviceSensorData.adcSO2 !== null) && (
+                <div>
+                  <h3 className="text-md font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Gauge className="w-4 h-4" />
+                    ADC Gas Sensor Readings (Volts)
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                    {deviceSensorData.adcNO !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">NO</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.adcNO.toFixed(2)}V</p>
+                      </div>
+                    )}
+                    {deviceSensorData.adcH2S !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">H₂S</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.adcH2S.toFixed(2)}V</p>
+                      </div>
+                    )}
+                    {deviceSensorData.adcS88 !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">S88</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.adcS88.toFixed(2)}V</p>
+                      </div>
+                    )}
+                    {deviceSensorData.adcPIS !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">PIS</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.adcPIS.toFixed(2)}V</p>
+                      </div>
+                    )}
+                    {deviceSensorData.adcNO2 !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">NO₂</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.adcNO2.toFixed(2)}V</p>
+                      </div>
+                    )}
+                    {deviceSensorData.adcO3 !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">O₃</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.adcO3.toFixed(2)}V</p>
+                      </div>
+                    )}
+                    {deviceSensorData.adcCO !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">CO</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.adcCO.toFixed(2)}V</p>
+                      </div>
+                    )}
+                    {deviceSensorData.adcSO2 !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">SO₂</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.adcSO2.toFixed(2)}V</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
 
-              {/* Humidity */}
-              {deviceSensorData.humidity !== null && (
-                <SensorCard
-                  title="Humidity"
-                  value={deviceSensorData.humidity}
-                  unit="%"
-                  icon={Droplets}
-                  min={0}
-                  max={100}
-                  color="secondary"
-                  index={2}
-                />
+              {/* PM Values */}
+              {(deviceSensorData.pm1_0_CF1 !== null || deviceSensorData.pm2_5_CF1 !== null || deviceSensorData.pm10_CF1 !== null || 
+                deviceSensorData.pm1_0_ATM !== null || deviceSensorData.pm2_5_ATM !== null || deviceSensorData.pm10_ATM !== null) && (
+                <div>
+                  <h3 className="text-md font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Cloud className="w-4 h-4" />
+                    Particulate Matter (PM)
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* CF1 Values */}
+                    {(deviceSensorData.pm1_0_CF1 !== null || deviceSensorData.pm2_5_CF1 !== null || deviceSensorData.pm10_CF1 !== null) && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-3 font-semibold">CF1 (Standard)</p>
+                        <div className="space-y-2">
+                          {deviceSensorData.pm1_0_CF1 !== null && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-foreground">PM1.0</span>
+                              <span className="text-lg font-bold text-primary">{deviceSensorData.pm1_0_CF1} µg/m³</span>
+                            </div>
+                          )}
+                          {deviceSensorData.pm2_5_CF1 !== null && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-foreground">PM2.5</span>
+                              <span className="text-lg font-bold text-primary">{deviceSensorData.pm2_5_CF1} µg/m³</span>
+                            </div>
+                          )}
+                          {deviceSensorData.pm10_CF1 !== null && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-foreground">PM10</span>
+                              <span className="text-lg font-bold text-primary">{deviceSensorData.pm10_CF1} µg/m³</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {/* ATM Values */}
+                    {(deviceSensorData.pm1_0_ATM !== null || deviceSensorData.pm2_5_ATM !== null || deviceSensorData.pm10_ATM !== null) && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-3 font-semibold">ATM (Atmospheric)</p>
+                        <div className="space-y-2">
+                          {deviceSensorData.pm1_0_ATM !== null && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-foreground">PM1.0</span>
+                              <span className="text-lg font-bold text-secondary">{deviceSensorData.pm1_0_ATM} µg/m³</span>
+                            </div>
+                          )}
+                          {deviceSensorData.pm2_5_ATM !== null && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-foreground">PM2.5</span>
+                              <span className="text-lg font-bold text-secondary">{deviceSensorData.pm2_5_ATM} µg/m³</span>
+                            </div>
+                          )}
+                          {deviceSensorData.pm10_ATM !== null && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-foreground">PM10</span>
+                              <span className="text-lg font-bold text-secondary">{deviceSensorData.pm10_ATM} µg/m³</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
 
-              {/* Latitude */}
-              <div className="glass-card-hover p-5 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-foreground">Latitude</h3>
-                    <p className="text-xs text-muted-foreground">GPS Coordinate</p>
+              {/* Particle Counts */}
+              {(deviceSensorData.particle_0_3 !== null || deviceSensorData.particle_0_5 !== null || deviceSensorData.particle_1_0 !== null || 
+                deviceSensorData.particle_2_5 !== null || deviceSensorData.particle_5_0 !== null || deviceSensorData.particle_10 !== null) && (
+                <div>
+                  <h3 className="text-md font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    Particle Counts (per 0.1L)
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {deviceSensorData.particle_0_3 !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">0.3µm</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.particle_0_3}</p>
+                      </div>
+                    )}
+                    {deviceSensorData.particle_0_5 !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">0.5µm</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.particle_0_5}</p>
+                      </div>
+                    )}
+                    {deviceSensorData.particle_1_0 !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">1.0µm</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.particle_1_0}</p>
+                      </div>
+                    )}
+                    {deviceSensorData.particle_2_5 !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">2.5µm</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.particle_2_5}</p>
+                      </div>
+                    )}
+                    {deviceSensorData.particle_5_0 !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">5.0µm</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.particle_5_0}</p>
+                      </div>
+                    )}
+                    {deviceSensorData.particle_10 !== null && (
+                      <div className="glass-card-hover p-4">
+                        <p className="text-xs text-muted-foreground mb-1">10µm</p>
+                        <p className="text-lg font-bold text-foreground">{deviceSensorData.particle_10}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="mb-4">
-                  <p className="text-4xl font-bold text-primary">{deviceSensorData.latitude.toFixed(6)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Degrees</p>
-                </div>
-              </div>
+              )}
 
-              {/* Longitude */}
-              <div className="glass-card-hover p-5 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-primary" />
+              {/* GPS & Timestamp */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Latitude */}
+                <div className="glass-card-hover p-5 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                      <MapPin className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-foreground">Latitude</h3>
+                      <p className="text-xs text-muted-foreground">GPS Coordinate</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-medium text-foreground">Longitude</h3>
-                    <p className="text-xs text-muted-foreground">GPS Coordinate</p>
+                  <div className="mb-4">
+                    <p className="text-3xl font-bold text-primary">{deviceSensorData.latitude.toFixed(6)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Degrees</p>
                   </div>
                 </div>
-                <div className="mb-4">
-                  <p className="text-4xl font-bold text-primary">{deviceSensorData.longitude.toFixed(6)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Degrees</p>
-                </div>
-              </div>
 
-              {/* Data Received Time */}
-              <div className="glass-card-hover p-5 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-success/20 flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-success" />
+                {/* Longitude */}
+                <div className="glass-card-hover p-5 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                      <MapPin className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-foreground">Longitude</h3>
+                      <p className="text-xs text-muted-foreground">GPS Coordinate</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-medium text-foreground">Data Received</h3>
-                    <p className="text-xs text-muted-foreground">Timestamp</p>
+                  <div className="mb-4">
+                    <p className="text-3xl font-bold text-primary">{deviceSensorData.longitude.toFixed(6)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Degrees</p>
                   </div>
                 </div>
-                <div className="mb-4">
-                  <p className="text-lg font-bold text-foreground">
-                    {new Date(deviceSensorData.timestamp).toLocaleString()}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatLastSeen(deviceSensorData.timestamp)}
-                  </p>
+
+                {/* Data Received Time */}
+                <div className="glass-card-hover p-5 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-lg bg-success/20 flex items-center justify-center">
+                      <Clock className="w-5 h-5 text-success" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-foreground">Data Received</h3>
+                      <p className="text-xs text-muted-foreground">Timestamp</p>
+                    </div>
+                  </div>
+                  <div className="mb-4">
+                    <p className="text-lg font-bold text-foreground">
+                      {new Date(deviceSensorData.timestamp).toLocaleString()}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formatLastSeen(deviceSensorData.timestamp)}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

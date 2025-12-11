@@ -58,7 +58,22 @@ app.use(express.json());
  */
 app.post('/api/sensor-data', async (req, res) => {
   try {
-    const { deviceId, deviceName, latitude, longitude, temperature, humidity, timestamp } = req.body;
+    const { 
+      deviceId, 
+      deviceName, 
+      latitude, 
+      longitude, 
+      temperature, 
+      humidity, 
+      co2,
+      // ADC values
+      adcNO, adcH2S, adcS88, adcPIS, adcNO2, adcO3, adcCO, adcSO2,
+      // PM values
+      pm1_0_CF1, pm2_5_CF1, pm10_CF1, pm1_0_ATM, pm2_5_ATM, pm10_ATM,
+      // Particle counts
+      particle_0_3, particle_0_5, particle_1_0, particle_2_5, particle_5_0, particle_10,
+      timestamp 
+    } = req.body;
 
     // Validation
     if (!deviceId) {
@@ -114,6 +129,51 @@ app.post('/api/sensor-data', async (req, res) => {
       }
     }
 
+    // Helper function to validate numeric sensor values
+    const validateSensorValue = (value, fieldName, min = 0) => {
+      if (value !== undefined && value !== null) {
+        if (typeof value !== 'number') {
+          return `'${fieldName}' must be a number`;
+        }
+        if (value < min) {
+          return `'${fieldName}' must be >= ${min}`;
+        }
+      }
+      return null;
+    };
+
+    // Validate all sensor values
+    const validationErrors = [
+      validateSensorValue(co2, 'co2'),
+      validateSensorValue(adcNO, 'adcNO'),
+      validateSensorValue(adcH2S, 'adcH2S'),
+      validateSensorValue(adcS88, 'adcS88'),
+      validateSensorValue(adcPIS, 'adcPIS'),
+      validateSensorValue(adcNO2, 'adcNO2'),
+      validateSensorValue(adcO3, 'adcO3'),
+      validateSensorValue(adcCO, 'adcCO'),
+      validateSensorValue(adcSO2, 'adcSO2'),
+      validateSensorValue(pm1_0_CF1, 'pm1_0_CF1'),
+      validateSensorValue(pm2_5_CF1, 'pm2_5_CF1'),
+      validateSensorValue(pm10_CF1, 'pm10_CF1'),
+      validateSensorValue(pm1_0_ATM, 'pm1_0_ATM'),
+      validateSensorValue(pm2_5_ATM, 'pm2_5_ATM'),
+      validateSensorValue(pm10_ATM, 'pm10_ATM'),
+      validateSensorValue(particle_0_3, 'particle_0_3'),
+      validateSensorValue(particle_0_5, 'particle_0_5'),
+      validateSensorValue(particle_1_0, 'particle_1_0'),
+      validateSensorValue(particle_2_5, 'particle_2_5'),
+      validateSensorValue(particle_5_0, 'particle_5_0'),
+      validateSensorValue(particle_10, 'particle_10'),
+    ].filter(Boolean);
+
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ 
+        error: 'Validation errors',
+        details: validationErrors
+      });
+    }
+
     // Get or create device
     let device = await Device.findOne({ deviceId });
     
@@ -150,10 +210,34 @@ app.post('/api/sensor-data', async (req, res) => {
       longitude,
       temperature: temperature !== undefined ? temperature : null,
       humidity: humidity !== undefined ? humidity : null,
+      co2: co2 !== undefined ? co2 : null,
+      // ADC values
+      adcNO: adcNO !== undefined ? adcNO : null,
+      adcH2S: adcH2S !== undefined ? adcH2S : null,
+      adcS88: adcS88 !== undefined ? adcS88 : null,
+      adcPIS: adcPIS !== undefined ? adcPIS : null,
+      adcNO2: adcNO2 !== undefined ? adcNO2 : null,
+      adcO3: adcO3 !== undefined ? adcO3 : null,
+      adcCO: adcCO !== undefined ? adcCO : null,
+      adcSO2: adcSO2 !== undefined ? adcSO2 : null,
+      // PM values
+      pm1_0_CF1: pm1_0_CF1 !== undefined ? pm1_0_CF1 : null,
+      pm2_5_CF1: pm2_5_CF1 !== undefined ? pm2_5_CF1 : null,
+      pm10_CF1: pm10_CF1 !== undefined ? pm10_CF1 : null,
+      pm1_0_ATM: pm1_0_ATM !== undefined ? pm1_0_ATM : null,
+      pm2_5_ATM: pm2_5_ATM !== undefined ? pm2_5_ATM : null,
+      pm10_ATM: pm10_ATM !== undefined ? pm10_ATM : null,
+      // Particle counts
+      particle_0_3: particle_0_3 !== undefined ? particle_0_3 : null,
+      particle_0_5: particle_0_5 !== undefined ? particle_0_5 : null,
+      particle_1_0: particle_1_0 !== undefined ? particle_1_0 : null,
+      particle_2_5: particle_2_5 !== undefined ? particle_2_5 : null,
+      particle_5_0: particle_5_0 !== undefined ? particle_5_0 : null,
+      particle_10: particle_10 !== undefined ? particle_10 : null,
       timestamp: timestamp ? new Date(timestamp) : new Date()
     });
 
-    console.log(`[Sensor Data] Received from ${deviceId}: GPS(${latitude}, ${longitude}), Temp: ${temperature || 'N/A'}°C, Humidity: ${humidity || 'N/A'}%`);
+    console.log(`[Sensor Data] Received from ${deviceId}: GPS(${latitude}, ${longitude}), Temp: ${temperature || 'N/A'}°C, Humidity: ${humidity || 'N/A'}%, CO2: ${co2 || 'N/A'} ppm`);
 
     res.status(200).json({
       success: true,
