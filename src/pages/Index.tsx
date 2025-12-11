@@ -1,5 +1,5 @@
-import { Thermometer, Droplets, Wind, Sun, Gauge, Zap } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Thermometer, Droplets, Wind, Sun, Gauge, Zap, MapPin, Clock, Tag } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
 import Header from "@/components/dashboard/Header";
 import MapView from "@/components/dashboard/MapView";
 import DeviceCard from "@/components/dashboard/DeviceCard";
@@ -54,9 +54,21 @@ const getDeviceType = (name: string): string => {
   return "Sensor";
 };
 
+interface DeviceSensorData {
+  deviceId: string;
+  deviceName: string;
+  temperature: number | null;
+  humidity: number | null;
+  latitude: number;
+  longitude: number;
+  timestamp: string;
+}
+
 const Index = () => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [devices, setDevices] = useState<Device[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [deviceSensorData, setDeviceSensorData] = useState<DeviceSensorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -119,6 +131,61 @@ const Index = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Fetch sensor data for selected device
+  const fetchDeviceSensorData = useCallback(async (deviceId: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/sensor-data/${deviceId}/latest`);
+      if (response.ok) {
+        const data = await response.json();
+        setDeviceSensorData({
+          deviceId: data.deviceId,
+          deviceName: data.deviceName,
+          temperature: data.temperature,
+          humidity: data.humidity,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          timestamp: data.timestamp || data.receivedAt
+        });
+      } else {
+        setDeviceSensorData(null);
+      }
+    } catch (err) {
+      console.error("Error fetching device sensor data:", err);
+      setDeviceSensorData(null);
+    }
+  }, []);
+
+  // Auto-select first device on initial load
+  useEffect(() => {
+    if (devices.length > 0 && !selectedDeviceId && !loading) {
+      const firstDeviceId = devices[0].id;
+      setSelectedDeviceId(firstDeviceId);
+      fetchDeviceSensorData(firstDeviceId);
+    }
+  }, [devices, loading, selectedDeviceId, fetchDeviceSensorData]);
+
+  // Handle device selection
+  const handleDeviceClick = (deviceId: string) => {
+    if (selectedDeviceId === deviceId) {
+      // Deselect if clicking the same device
+      setSelectedDeviceId(null);
+      setDeviceSensorData(null);
+    } else {
+      setSelectedDeviceId(deviceId);
+      fetchDeviceSensorData(deviceId);
+    }
+  };
+
+  // Poll for selected device sensor data updates
+  useEffect(() => {
+    if (selectedDeviceId) {
+      const interval = setInterval(() => {
+        fetchDeviceSensorData(selectedDeviceId);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [selectedDeviceId]);
+
   const onlineCount = devices.filter(d => d.isOnline).length;
 
   return (
@@ -155,7 +222,13 @@ const Index = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {devices.map((device, index) => (
-                  <DeviceCard key={device.id} {...device} index={index} />
+                  <DeviceCard 
+                    key={device.id} 
+                    {...device} 
+                    index={index}
+                    onClick={() => handleDeviceClick(device.id)}
+                    isSelected={selectedDeviceId === device.id}
+                  />
                 ))}
               </div>
             )}
@@ -164,12 +237,132 @@ const Index = () => {
 
         {/* Sensor Values Section */}
         <div className="glass-card p-6 animate-fade-in-up stagger-3 opacity-0">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Sensor Readings</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sensors.map((sensor, index) => (
-              <SensorCard key={sensor.title} {...sensor} index={index} />
-            ))}
-          </div>
+          <h2 className="text-lg font-semibold text-foreground mb-4">
+            Sensor Readings
+            {selectedDeviceId && deviceSensorData && (
+              <span className="text-sm text-muted-foreground font-normal ml-2">
+                - {deviceSensorData.deviceName}
+              </span>
+            )}
+          </h2>
+          
+          {selectedDeviceId && deviceSensorData ? (
+            // Show device-specific sensor data
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Device Name */}
+              <div className="glass-card-hover p-5 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-secondary/20 flex items-center justify-center">
+                    <Tag className="w-5 h-5 text-secondary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">Device Name</h3>
+                    <p className="text-xs text-muted-foreground">Identifier</p>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <p className="text-2xl font-bold text-foreground">{deviceSensorData.deviceName}</p>
+                  <p className="text-xs text-muted-foreground mt-1 font-mono">{deviceSensorData.deviceId}</p>
+                </div>
+              </div>
+
+              {/* Temperature */}
+              {deviceSensorData.temperature !== null && (
+                <SensorCard
+                  title="Temperature"
+                  value={deviceSensorData.temperature}
+                  unit="°C"
+                  icon={Thermometer}
+                  min={-10}
+                  max={50}
+                  color="primary"
+                  index={1}
+                />
+              )}
+
+              {/* Humidity */}
+              {deviceSensorData.humidity !== null && (
+                <SensorCard
+                  title="Humidity"
+                  value={deviceSensorData.humidity}
+                  unit="%"
+                  icon={Droplets}
+                  min={0}
+                  max={100}
+                  color="secondary"
+                  index={2}
+                />
+              )}
+
+              {/* Latitude */}
+              <div className="glass-card-hover p-5 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">Latitude</h3>
+                    <p className="text-xs text-muted-foreground">GPS Coordinate</p>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <p className="text-4xl font-bold text-primary">{deviceSensorData.latitude.toFixed(6)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Degrees</p>
+                </div>
+              </div>
+
+              {/* Longitude */}
+              <div className="glass-card-hover p-5 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">Longitude</h3>
+                    <p className="text-xs text-muted-foreground">GPS Coordinate</p>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <p className="text-4xl font-bold text-primary">{deviceSensorData.longitude.toFixed(6)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Degrees</p>
+                </div>
+              </div>
+
+              {/* Data Received Time */}
+              <div className="glass-card-hover p-5 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-success/20 flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-success" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">Data Received</h3>
+                    <p className="text-xs text-muted-foreground">Timestamp</p>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <p className="text-lg font-bold text-foreground">
+                    {new Date(deviceSensorData.timestamp).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatLastSeen(deviceSensorData.timestamp)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Show default sensor cards when no device is selected
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {sensors.map((sensor, index) => (
+                <SensorCard key={sensor.title} {...sensor} index={index} />
+              ))}
+            </div>
+          )}
+          
+          {selectedDeviceId && !deviceSensorData && (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              No sensor data available for this device. The device needs to send temperature and humidity data.
+            </p>
+          )}
         </div>
 
         {/* Footer */}

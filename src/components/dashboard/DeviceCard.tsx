@@ -7,13 +7,18 @@ interface DeviceCardProps {
   lastSeen: string;
   type: string;
   index: number;
+  onClick?: () => void;
+  isSelected?: boolean;
 }
 
-const DeviceCard = ({ name, id, isOnline, lastSeen, type, index }: DeviceCardProps) => {
+const DeviceCard = ({ name, id, isOnline, lastSeen, type, index, onClick, isSelected }: DeviceCardProps) => {
   return (
     <div 
-      className={`glass-card-hover p-5 opacity-0 animate-fade-in-up`}
+      className={`glass-card-hover p-5 opacity-0 animate-fade-in-up cursor-pointer transition-all ${
+        isSelected ? 'ring-2 ring-primary border-primary' : ''
+      }`}
       style={{ animationDelay: `${0.1 + index * 0.1}s` }}
+      onClick={onClick}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
