@@ -58,6 +58,34 @@ app.use(express.json());
  */
 app.post('/api/sensor-data', async (req, res) => {
   try {
+    // Normalize field names to handle both device naming conventions
+    // Device sends: adcNo, pm1_0_cf1, particles_0_3, etc.
+    // Backend expects: adcNO, pm1_0_CF1, particle_0_3, etc.
+    const normalizeField = (obj, deviceKey, backendKey) => {
+      if (obj[deviceKey] !== undefined && obj[backendKey] === undefined) {
+        obj[backendKey] = obj[deviceKey];
+      }
+    };
+
+    // Normalize ADC field names (handle adcNo -> adcNO)
+    normalizeField(req.body, 'adcNo', 'adcNO');
+
+    // Normalize PM field names (handle lowercase: pm1_0_cf1 -> pm1_0_CF1)
+    normalizeField(req.body, 'pm1_0_cf1', 'pm1_0_CF1');
+    normalizeField(req.body, 'pm2_5_cf1', 'pm2_5_CF1');
+    normalizeField(req.body, 'pm10_cf1', 'pm10_CF1');
+    normalizeField(req.body, 'pm1_0_atm', 'pm1_0_ATM');
+    normalizeField(req.body, 'pm2_5_atm', 'pm2_5_ATM');
+    normalizeField(req.body, 'pm10_atm', 'pm10_ATM');
+
+    // Normalize particle count field names (handle plural: particles_0_3 -> particle_0_3)
+    normalizeField(req.body, 'particles_0_3', 'particle_0_3');
+    normalizeField(req.body, 'particles_0_5', 'particle_0_5');
+    normalizeField(req.body, 'particles_1_0', 'particle_1_0');
+    normalizeField(req.body, 'particles_2_5', 'particle_2_5');
+    normalizeField(req.body, 'particles_5_0', 'particle_5_0');
+    normalizeField(req.body, 'particles_10', 'particle_10');
+
     const { 
       deviceId, 
       deviceName, 

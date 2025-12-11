@@ -420,13 +420,13 @@ const Index = () => {
                 </div>
               )}
 
-              {/* PM Values */}
+              {/* PMS5003 Sensor - PM Values */}
               {(deviceSensorData.pm1_0_CF1 !== null || deviceSensorData.pm2_5_CF1 !== null || deviceSensorData.pm10_CF1 !== null || 
                 deviceSensorData.pm1_0_ATM !== null || deviceSensorData.pm2_5_ATM !== null || deviceSensorData.pm10_ATM !== null) && (
                 <div>
                   <h3 className="text-md font-semibold text-foreground mb-3 flex items-center gap-2">
                     <Cloud className="w-4 h-4" />
-                    Particulate Matter (PM)
+                    PMS5003 - Particulate Matter (PM)
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* CF1 Values */}
@@ -485,13 +485,13 @@ const Index = () => {
                 </div>
               )}
 
-              {/* Particle Counts */}
+              {/* PMS5003 Sensor - Particle Counts */}
               {(deviceSensorData.particle_0_3 !== null || deviceSensorData.particle_0_5 !== null || deviceSensorData.particle_1_0 !== null || 
                 deviceSensorData.particle_2_5 !== null || deviceSensorData.particle_5_0 !== null || deviceSensorData.particle_10 !== null) && (
                 <div>
                   <h3 className="text-md font-semibold text-foreground mb-3 flex items-center gap-2">
                     <BarChart3 className="w-4 h-4" />
-                    Particle Counts (per 0.1L)
+                    PMS5003 - Particle Counts (per 0.1L)
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                     {deviceSensorData.particle_0_3 !== null && (
