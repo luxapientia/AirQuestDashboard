@@ -1,5 +1,5 @@
 import { MapPin, Navigation, Satellite } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -37,14 +37,16 @@ const createCustomIcon = (isActive: boolean) => {
   });
 };
 
-// Component to automatically fit bounds to all markers
+// Component to automatically fit bounds to all markers (only once on initial load)
 const AutoFitBounds = ({ locations }: { locations: Location[] }) => {
   const map = useMap();
+  const hasFittedBounds = useRef(false);
 
   useEffect(() => {
-    if (locations.length > 0) {
+    if (locations.length > 0 && !hasFittedBounds.current) {
       const bounds = L.latLngBounds(locations.map((loc) => [loc.lat, loc.lng]));
       map.fitBounds(bounds, { padding: [50, 50] });
+      hasFittedBounds.current = true;
     }
   }, [locations, map]);
 
